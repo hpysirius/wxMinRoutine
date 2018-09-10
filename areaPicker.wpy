@@ -1,0 +1,144 @@
+<template lang="wxml">
+  <view class="gx-area">
+    <scroll-view 
+      class="gx-area__content__scroll"
+      scroll-y="true"
+      bindscrolltoupper="upper"
+      bindscrolltolower="lower"
+      bindscroll="scroll"
+      scroll-into-view="{{iview}}"
+    >
+      <block wx:for="{{cities}}" wx:for-item="item" wx:for-index="idx" wx:key="idx">
+        <view class="gx-area__li_{{item.key}}" id="gx-area__li_{{item.key}}">
+          <view class="gx-area__tit">{{item.key}}</view>
+          <view wx:for="{{item.list}}" wx:for-item="area">
+            <view class="gx-area__item {{area.name === selected ? 'gx-area__selected': ''}}" @tap="selectItem({{area.name}})">
+              {{area.name}}
+            </view>
+          </view>
+        </view>
+      </block>
+    </scroll-view>
+    <view class="gx-area__fixed">
+    <view wx:for="{{words}}" wx:for-item="word" class="gx-area__word" @tap="selectArea({{word}})">
+     {{word}}
+    </view>
+  </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import cities from '../assets/js/lib/city';
+import bemMixin from '../mixins/bem';
+
+const words = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+
+export default class AreaPicker extends wepy.component {
+  name = 'areaPicker';
+  data = {
+    cities: this.handleCitys(cities),
+    words,
+    scrollTop: 0,
+    iview: '',
+    selected: ''
+  };
+  handleCitys(cities){
+    let storeCity = new Array(26);
+      words.forEach((item,index)=>{
+          storeCity[index] = {
+              key : item,
+              list : []
+          }
+      });
+      cities.forEach((item)=>{
+          let firstName = item.pinyin.substring(0,1);
+          let index = words.indexOf( firstName );
+          storeCity[index].list.push({
+              name : item.name,
+              key : firstName
+          });
+      });
+    return storeCity;
+  };
+  computed = {
+  };
+  mixins = [bemMixin];
+  methods = {
+    selectArea(key) {
+      this.iview = 'gx-area__li_' + key;
+      this.selected = '';
+      // wx.createSelectorQuery().select('.gx-area__li_' + key).boundingClientRect(rect => {
+      //   console.log(rect);
+      //   this.iview = rect.id;
+      // }).exec();
+    },
+    selectItem(item) {
+      this.selected = item;
+    }
+  };
+}
+</script>
+
+<style lang="scss">
+@import '../style/var.scss';
+@import '../style/mixin/clearfix.scss';
+@import '../style/mixin/border-retina.scss';
+.gx-area {
+    background: #efeff4; // padding-bottom: 50px;
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    &__tit {
+      width: 100%;
+      height: 32px;
+      line-height: 32px;
+      padding: 0 18px;
+      font-size: 16px;
+      color: #515B70;
+      background: #F4F4F4;
+    }
+    &__item {
+      position: relative;
+      width: 100%;
+      height: 48px;
+      line-height: 48px;
+      padding: 0 18px;
+      font-size: 18px;
+      color: #A1A7B3;
+      background: #fff;
+      &:after {
+        @include border-retina(bottom, #E5E5E5);
+      }
+    }
+    &__fixed {
+      position:fixed;
+      right:0;
+      top:50%;
+      z-index:10;
+      width: 25px;
+      transform:translateY(-50%);
+    }
+    &__word {
+      text-align: center;
+      font-size: 14px;
+      line-height: 23px;
+      color: #4FA0FB;
+    }
+    &__selected {
+      font-weight: bold;
+      color: #4FA0FB;
+    }
+    &__content {
+        // padding-top: 32px;
+        position: relative;
+        flex: 1;
+        &__scroll {
+            position: absolute;
+            top: 0;
+            bottom: 0; //  height:200px;
+            width: 100%;
+        }
+    }
+}
+</style>
